@@ -1,0 +1,58 @@
+{
+  "configVersion": "v3",
+  "app": {
+    "appId": 1135461,
+    "appName": "Mananciais SP",
+    "appType": "app",
+    "version": {
+      "code": 23,
+      "name": "1.5.0"
+    },
+    "icon": "icon.png",
+    "vender": "ArtBombs",
+    "description": "Volume, chuva, nível, vazões e diagrama dos mananciais da Grande São Paulo (dados públicos da Sabesp)"
+  },
+  "permissions": [
+    "data:os.device.info",
+    "device:os.local_storage"
+  ],
+  "runtime": {
+    "apiVersion": {
+      "compatible": "3.0",
+      "target": "3.0",
+      "minVersion": "3.0"
+    }
+  },
+  "debug": false,
+  "targets": {
+    "common": {
+      "module": {
+        "page": {
+          "pages": [
+            "page/index/index.page",
+            "page/about/index.page"
+          ]
+        },
+        "app-side": {
+          "path": "app-side/index"
+        }
+      },
+      "platforms": [
+        {
+          "st": "r",
+          "sr": "w480"
+        }
+      ],
+      "designWidth": 480
+    }
+  },
+  "i18n": {
+    "pt-BR": {
+      "appName": "Mananciais SP"
+    },
+    "en-US": {
+      "appName": "Mananciais SP"
+    }
+  },
+  "defaultLanguage": "en-US"
+}

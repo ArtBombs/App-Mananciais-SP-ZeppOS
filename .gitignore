@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.DS_Store
+Thumbs.db
+
+# backups locais e fontes de arte (não vão para o repositório)
+*.bak*
+design/

@@ -1,0 +1,16 @@
+{
+  "name": "mananciais-sp",
+  "version": "1.5.0",
+  "private": true,
+  "description": "Mini app Zepp OS - represas da Grande São Paulo (dados públicos da Sabesp)",
+  "author": "ArtBombs",
+  "license": "MIT",
+  "scripts": {
+    "test": "node test/harness.mjs && node test/sobre.mjs && node test/side.mjs"
+  },
+  "devDependencies": {
+    "@zeppos/device-types": "^4.0.0",
+    "@zeppos/zml": "^0.0.43",
+    "esbuild": "^0.28.2"
+  }
+}
