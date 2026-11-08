@@ -1,3 +1,4 @@
+<img width="1920" height="2100" alt="apt_loja_1920x1080" src="https://github.com/user-attachments/assets/aa02a730-d4ad-44af-a1e0-38e7e2f33783" />
 # Mananciais SP — mini app Zepp OS
 
 **PT** · As represas da Grande São Paulo no pulso: volume útil, chuva, nível, vazões, diagrama "Por dentro do sistema" e tendência de 30 dias dos **8 sistemas da Sabesp**, com dados públicos do [Portal dos Mananciais](https://mananciais.sabesp.com.br), atualizados todo dia às 9h.
