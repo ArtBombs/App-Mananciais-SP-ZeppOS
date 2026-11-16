@@ -1,4 +1,4 @@
-<img width="1920" height="2100" alt="apt_loja_1920x1080" src="https://github.com/user-attachments/assets/09c7701d-c404-423b-ade3-860d94355896" />
+<img width="1920" height="2100" alt="preview_loja_1920x1080" src="https://github.com/user-attachments/assets/61c712e7-d5db-4fc0-82c8-6e6347491bed" />
 
 # Mananciais SP — mini app Zepp OS
 
