@@ -5,7 +5,7 @@ const mk = (type, opts) => { const w = { type, opts: { ...opts }, ev: {}, vivo: 
 const store = {}
 globalThis.__zos = {
   ui: { createWidget: mk, deleteWidget: (w) => { w.vivo = false }, widget: { TEXT: 'TEXT', IMG: 'IMG', FILL_RECT: 'FILL_RECT', QRCODE: 'QRCODE' }, align: { CENTER_H: 'c', CENTER_V: 'v' }, text_style: { NONE: 0 }, event: { CLICK_UP: 'up' } },
-  app: { getPackageInfo: () => ({ version: { name: '1.5.0', code: 23 } }) },
+  app: { getPackageInfo: () => ({ version: { name: '1.5.1', code: 24 } }) },
   storage: { localStorage: { getItem: (k, d) => store[k] ?? d, setItem: (k, v) => { if (typeof v !== 'string') throw new Error('string'); store[k] = v } } },
   display: { setPageBrightTime: () => 0 },
   utils: { px: (v) => v },
