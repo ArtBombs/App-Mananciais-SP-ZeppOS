@@ -8,9 +8,10 @@ import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { px } from '@zos/utils'
 import { EN, t, dataCurta } from '../i18n'
+import { Y as yReal, telaCheia, QUAD, LARG, ALT } from '../tela'
 
 const C = { bg: 0x000000, branco: 0xffffff, ciano: 0x11b8e2 } // ciano = mesma cor da arte
-const VERSAO_RESERVA = '1.5.1' // se getPackageInfo não existir no firmware
+const VERSAO_RESERVA = '1.6.0' // se getPackageInfo não existir no firmware
 // Apoio (LivePix): https://livepix.gg/artbombs — para trocar o link, regerar a imagem:
 //   python3 tools/qr_png.py <link> assets/common.w480-r/image/qr_apoio.png
 // Avisa a página principal que o Sobre está por cima (para a coroa não abrir a lista escondida).
@@ -27,7 +28,7 @@ function versao() {
 
 function texto(o) {
   return createWidget(widget.TEXT, {
-    x: px(o.x), y: px(o.y), w: px(o.w), h: px(o.h),
+    x: px(o.x), y: yReal(o.y), w: px(o.w), h: px(o.h),
     text: o.text, text_size: px(o.size), color: o.color,
     align_h: align.CENTER_H, align_v: align.CENTER_V, text_style: text_style.NONE,
   })
@@ -35,7 +36,7 @@ function texto(o) {
 
 // Área de toque invisível (TEXT vazio é transparente e aceita eventos).
 function area(x, y, w, h, fn) {
-  const a = createWidget(widget.TEXT, { x: px(x), y: px(y), w: px(w), h: px(h), text: '' })
+  const a = createWidget(widget.TEXT, w >= 480 && h >= 480 ? { ...telaCheia(0), text: '' } : { x: px(x), y: yReal(y), w: px(w), h: px(h), text: '' })
   a.addEventListener(event.CLICK_UP, fn)
   return a
 }
@@ -64,7 +65,9 @@ Page({
   },
 
   build() {
-    createWidget(widget.IMG, { x: 0, y: 0, w: px(480), h: px(480), src: EN ? 'image/sobre_en.png' : 'image/sobre.png' }) // inglês: tools/sobre_en.py
+    // Arte: redonda 480×480; no quadrado, versão própria 390×450 (tools/quadrado.py), com as faixas de ponta a ponta.
+    const arte = EN ? 'image/sobre_en.png' : 'image/sobre.png' // inglês: tools/sobre_en.py
+    createWidget(widget.IMG, QUAD ? { x: 0, y: 0, w: LARG, h: ALT, src: arte } : { x: 0, y: 0, w: px(480), h: px(480), src: arte })
     // Posições medidas na arte (21/11): versão no topo, acima do logo; data na faixa azul-petróleo.
     texto({ x: 40, y: 281, w: 400, h: 38, text: t('dadosDe') + dataCurta(this.state.params.data) + t('atualiza9h'), size: 20, color: C.branco })
     texto({ x: 160, y: 21, w: 160, h: 34, text: 'v' + versao(), size: 20, color: C.ciano })
@@ -75,10 +78,10 @@ Page({
   abrirQR() {
     if (this.state.qr) return
     const L = []
-    L.push(createWidget(widget.FILL_RECT, { x: 0, y: 0, w: px(480), h: px(480), color: C.bg }))
+    L.push(createWidget(widget.FILL_RECT, { ...telaCheia(0), color: C.bg }))
     // QR em imagem (tools/qr_png.py): o widget QRCODE do Balance desenha o código menor que o
     // pedido e preso no canto de cima (v1.3.6). Quadro branco 320×320 centralizado.
-    L.push(createWidget(widget.IMG, { x: px(80), y: px(80), w: px(320), h: px(320), src: 'image/qr_apoio.png' }))
+    L.push(createWidget(widget.IMG, { x: px(80), y: yReal(80), w: px(320), h: px(320), src: 'image/qr_apoio.png' }))
     // Toque em qualquer lugar fecha (camada transparente por cima de tudo).
     L.push(area(0, 0, 480, 480, () => this.fecharQR()))
     this.state.qr = L

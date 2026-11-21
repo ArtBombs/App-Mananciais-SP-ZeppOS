@@ -5,6 +5,7 @@
 // A doc do CANVAS limita a 3 camadas empilhadas: aqui é um canvas só.
 import { createWidget, widget, align, text_style, prop } from '@zos/ui'
 import { rotuloDiagrama } from '../i18n'
+import { Y as yReal } from '../tela'
 import { px } from '@zos/utils'
 
 const P = (v) => Math.round(px(v))
@@ -296,7 +297,7 @@ function rotulo(y0, cx, cy, txt, size, cor, w = 160) {
   const wa = Math.max(w, Math.ceil([...String(txt)].length * size * 0.66) + 12)
   const h = Math.round(size * 1.9)
   return createWidget(widget.TEXT, {
-    x: px(Math.round(cx - wa / 2)), y: px(Math.round(y0 + cy - h / 2)), w: px(wa), h: px(h),
+    x: px(Math.round(cx - wa / 2)), y: yReal(Math.round(y0 + cy - h / 2)), w: px(wa), h: px(h),
     text: txt, text_size: px(size), color: cor,
     align_h: align.CENTER_H, align_v: align.CENTER_V, text_style: text_style.NONE,
   })
@@ -602,14 +603,14 @@ export function montarDiagrama(sistema, y0, C, modo = 'png') {
     // (vazio + água) por baixo; o PNG por cima tem o canto arredondado já pintado de preto
     // (tools/mascara_png.py), então o retângulo vira a forma certa.
     for (const t of E.tanques) {
-      const caixa = (yt, cor) => ({ x: px(Math.round(t.x1)), y: px(Math.round(y0 + yt)), w: px(Math.round(t.x2 - t.x1)), h: px(Math.max(1, Math.round(t.y2 - yt))), color: cor })
+      const caixa = (yt, cor) => ({ x: px(Math.round(t.x1)), y: yReal(Math.round(y0 + yt)), w: px(Math.round(t.x2 - t.x1)), h: px(Math.max(1, Math.round(t.y2 - yt))), color: cor })
       const vazio = createWidget(widget.FILL_RECT, caixa(t.y1, C.track))
       const agua = createWidget(widget.FILL_RECT, caixa(t.y2 - 1, C.track))
       dg.telas[t.chave] = { agua, vazio, caixa }
     }
-    createWidget(widget.IMG, { x: 0, y: px(y0), w: px(480), h: px(480), src: E.fundo })
+    createWidget(widget.IMG, { x: 0, y: yReal(y0), w: px(480), h: px(480), src: E.fundo })
   } else {
-    const cv = createWidget(widget.CANVAS, { x: 0, y: px(y0), w: px(480), h: px(480) })
+    const cv = createWidget(widget.CANVAS, { x: 0, y: yReal(y0), w: px(480), h: px(480) })
     desenharLista(cv, E.desenho, C)
     for (const t of E.tanques) dg.telas[t.chave] = { cv, ox: 0, oy: 0 }
   }

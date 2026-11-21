@@ -1,12 +1,17 @@
-"""Renderiza as telas do app (widgets gravados pelo harness) em PNG 480×480 com o fundo
-redondo, para as imagens da loja. Fonte Inter no lugar da fonte do sistema (aproximação).
+"""Renderiza as telas do app (widgets gravados pelo harness) em PNG para as imagens da loja:
+480×480 com o fundo redondo, ou 390×450 com cantos arredondados (quadrado, Bip 6/GTS 4).
+Fonte Inter no lugar da fonte do sistema (aproximação).
   DUMPPAGINA=pagina.json node test/harness.mjs
-  python3 tools/capturas.py pagina.json pasta_saida [sobre.json]"""
+  python3 tools/capturas.py pagina.json pasta_saida [sobre.json]
+  quadrado: DEV_W=390 DEV_H=450 no harness, no test/sobre.mjs e aqui (o formato vem do pagina.json)."""
 import json, sys, os
 from PIL import Image, ImageDraw, ImageFont
 
 S = 3  # supersampling
-RAIZ = os.path.join(os.path.dirname(__file__), '..', 'assets', 'common.w480-r')
+RAIZ = os.path.join(os.path.dirname(__file__), '..', 'assets', 'common.w480-r')  # PNG de 480: no quadrado são reduzidos ao w×h do widget
+RAIZ_Q = os.path.join(os.path.dirname(__file__), '..', 'assets', 'common.w390-s')  # Sobre quadrado tem arte própria
+SW, SH, PAG = 480, 480, 480
+CANTO = 86  # raio dos cantos da tela quadrada (Bip 6), em px
 FONTES = ['/usr/share/fonts/opentype/inter/Inter-Regular.otf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf']
 FONTE = next(f for f in FONTES if os.path.exists(f))
 cor = lambda c: '#%06x' % (c & 0xFFFFFF)
@@ -17,10 +22,10 @@ def fonte(px):
     return _fc[k]
 
 def tela(widgets, y0):
-    im = Image.new('RGBA', (480 * S, 480 * S), (0, 0, 0, 255))
+    im = Image.new('RGBA', (SW * S, SH * S), (0, 0, 0, 255))
     g = ImageDraw.Draw(im)
     for w in widgets:
-        if not (y0 <= w.get('y', 0) < y0 + 480): continue
+        if not (y0 <= w.get('y', 0) < y0 + PAG): continue
         x, y = w.get('x', 0) * S, (w['y'] - y0) * S
         t = w['type']
         if t == 'FILL_RECT':
@@ -41,8 +46,9 @@ def tela(widgets, y0):
                 px_, py_ = cx + rr * math.cos(math.radians(a)), cy + rr * math.sin(math.radians(a))
                 g.ellipse([px_ - lw / 2, py_ - lw / 2, px_ + lw / 2, py_ + lw / 2], fill=cor(w['color']))
         elif t == 'IMG':
-            p = Image.open(os.path.join(RAIZ, w['src'])).convert('RGBA')
-            p = p.resize((p.width * S, p.height * S), Image.LANCZOS)
+            raiz = RAIZ_Q if (SW != SH and w['src'].startswith('image/sobre')) else RAIZ
+            p = Image.open(os.path.join(raiz, w['src'])).convert('RGBA')
+            p = p.resize((round(w.get('w', p.width) * S), round(w.get('h', p.height) * S)), Image.LANCZOS)
             im.alpha_composite(p, (int(x), int(y)))
         elif t == 'TEXT' and w.get('text'):
             f = fonte(w['text_size'])
@@ -51,23 +57,25 @@ def tela(widgets, y0):
             ax = {'l': x, 'r': x + ww}.get(al, x + ww / 2)
             anchor = {'l': 'lm', 'r': 'rm'}.get(al, 'mm')
             g.text((ax, y + hh / 2), str(w['text']), font=f, fill=cor(w['color']), anchor=anchor)
-    im = im.resize((480, 480), Image.LANCZOS)
-    m = Image.new('L', (480 * S, 480 * S), 0)
-    ImageDraw.Draw(m).ellipse([0, 0, 480 * S - 1, 480 * S - 1], fill=255)
-    out = Image.new('RGBA', (480, 480), (0, 0, 0, 0))
-    out.paste(im, mask=m.resize((480, 480), Image.LANCZOS))
+    im = im.resize((SW, SH), Image.LANCZOS)
+    m = Image.new('L', (SW * S, SH * S), 0)
+    if SW == SH: ImageDraw.Draw(m).ellipse([0, 0, SW * S - 1, SH * S - 1], fill=255)
+    else: ImageDraw.Draw(m).rounded_rectangle([0, 0, SW * S - 1, SH * S - 1], CANTO * S, fill=255)
+    out = Image.new('RGBA', (SW, SH), (0, 0, 0, 0))
+    out.paste(im, mask=m.resize((SW, SH), Image.LANCZOS))
     return out
 
 pagina, saida = sys.argv[1], sys.argv[2]
 os.makedirs(saida, exist_ok=True)
 d = json.load(open(pagina))
+SW, SH, PAG = d.get('sw', 480), d.get('sh', 480), d.get('pag', 480)
 nomes = ['1_volume', '2_chuva', '3_nivel_vazoes', '4_por_dentro', '5_represas', '6_tendencia']
 for k in range(d['n']):
-    tela(d['widgets'], k * 480).save(os.path.join(saida, nomes[k] + '.png'))
+    tela(d['widgets'], k * PAG).save(os.path.join(saida, nomes[k] + '.png'))
 if d.get('lista'):
     tela(d['lista'], 0).save(os.path.join(saida, '0_lista_sistemas.png'))
 if len(sys.argv) > 3:
     s = json.load(open(sys.argv[3]))
     ws = [dict(type='IMG', **w) for w in s['imgs']] + [dict(type='TEXT', **w) for w in s['textos']]
-    tela(ws, 1440).save(os.path.join(saida, '7_sobre.png'))
+    tela(ws, 3 * PAG).save(os.path.join(saida, '7_sobre.png'))
 print('ok', saida)

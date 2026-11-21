@@ -15,6 +15,7 @@ import * as zosRouter from '@zos/router'
 import { montarDiagrama, pintarTanques, temDiagrama } from './diagrama'
 import { SISTEMAS, SISTEMA_PADRAO, SISTEMA_PONTE, MAX_REPRESAS, nomeSistema as nomeSistemaPt } from '../../shared/sabesp'
 import { t, fmt, dataCurta, nomeSistemaI18n } from '../i18n'
+import { Y as yReal, ALT, telaCheia } from '../tela'
 
 // ─── Design tokens ────────────────────────────────────────────────
 const C = {
@@ -102,7 +103,7 @@ function gravarJSON(k, v) {
 function text(y0, o) {
   return createWidget(widget.TEXT, {
     x: px(o.x ?? 40),
-    y: px(y0 + o.y),
+    y: yReal(y0 + o.y),
     w: px(o.w ?? SCREEN - 80),
     h: px(o.h ?? 40),
     text: o.text ?? '--',
@@ -115,7 +116,9 @@ function text(y0, o) {
 }
 
 function rect(x, y, w, h, color, radius = 0) {
-  return createWidget(widget.FILL_RECT, { x: px(x), y: px(y), w: px(w), h: px(Math.max(1, h)), color, radius: px(radius) })
+  // Fundo de camada (tela inteira): no quadrado cobre também as faixas de cima e de baixo.
+  if (w >= SCREEN && h >= SCREEN) return createWidget(widget.FILL_RECT, { ...telaCheia(y), color, radius: 0 })
+  return createWidget(widget.FILL_RECT, { x: px(x), y: yReal(y), w: px(w), h: px(Math.max(1, h)), color, radius: px(radius) })
 }
 
 // ─── Coroa (Balance: clique e giro = KEY_HOME; botão de baixo = KEY_SHORTCUT) ───
@@ -187,7 +190,7 @@ function apagar(w) {
 }
 
 function setRect(wd, x, y, w, h, color, radius = 0) {
-  wd.setProperty(prop.MORE, { x: px(x), y: px(y), w: px(w), h: px(Math.max(1, h)), color, radius: px(radius) })
+  wd.setProperty(prop.MORE, { x: px(x), y: yReal(y), w: px(w), h: px(Math.max(1, h)), color, radius: px(radius) })
 }
 
 
@@ -224,7 +227,7 @@ Page(
       } catch (x) {}
       try {
         createWidget(widget.TEXT, {
-          x: px(50), y: px(170), w: px(380), h: px(160),
+          x: px(50), y: yReal(170), w: px(380), h: px(160),
           text: 'ERRO em ' + onde + ':\n' + String((e && e.message) || e).slice(0, 120),
           text_size: px(22), color: C.critico,
           align_h: align.CENTER_H, align_v: align.CENTER_V,
@@ -409,12 +412,12 @@ Page(
       // ── Tela 1 · Volume ─────────────────────────────────────────
       let y0 = 0
       createWidget(widget.ARC, {
-        x: px(40), y: px(y0 + 40), w: px(400), h: px(400),
+        x: px(40), y: yReal(y0 + 40), w: px(400), h: px(400),
         start_angle: ARC_INI, end_angle: ARC_INI + ARC_SPAN,
         color: C.track, line_width: px(22),
       })
       ui.arc = createWidget(widget.ARC, {
-        x: px(40), y: px(y0 + 40), w: px(400), h: px(400),
+        x: px(40), y: yReal(y0 + 40), w: px(400), h: px(400),
         start_angle: ARC_INI, end_angle: ARC_INI + 1,
         color: C.agua, line_width: px(22),
       })
@@ -513,7 +516,7 @@ Page(
       setScrollMode({
         mode: SCROLL_MODE_SWIPER,
         options: {
-          height: px(SCREEN),
+          height: ALT, // página do swiper: 480 no redondo (px), 450 no quadrado
           count: this.state.nTelas || 5,
           // API 3.0: avisa a troca de página (índice começa em 0). Firmware sem suporte ignora.
           modeParams: {
@@ -726,7 +729,7 @@ Page(
       ui.hm3.setProperty(prop.TEXT, '')
       ui.status.setProperty(prop.TEXT, t('atualizando'))
       ui.arc.setProperty(prop.MORE, {
-        x: px(40), y: px(40), w: px(400), h: px(400),
+        x: px(40), y: yReal(40), w: px(400), h: px(400),
         start_angle: ARC_INI, end_angle: ARC_INI + 1, color: C.muted, line_width: px(22),
       })
     },
@@ -772,7 +775,7 @@ Page(
       const cor = corVolume(d.vol)
       const prog = clamp(d.vol ?? 0, 0, 100)
       ui.arc.setProperty(prop.MORE, {
-        x: px(40), y: px(40), w: px(400), h: px(400),
+        x: px(40), y: yReal(40), w: px(400), h: px(400),
         start_angle: ARC_INI, end_angle: ARC_INI + Math.max(1, (ARC_SPAN * prog) / 100),
         color: cor, line_width: px(22),
       })

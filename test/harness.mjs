@@ -15,6 +15,10 @@ const mk = (type, opts) => { if (type==='CANVAS') return mkCanvas(opts); const w
 function mkCanvas(opts){ const ops=[]; const w={ type:'CANVAS', opts:{...opts, visible:true}, ev:{}, vivo:true, ops, setProperty(){}, addEventListener(){} }
   for (const f of ['setPaint','drawLine','drawRect','strokeRect','drawCircle','strokeCircle','drawPoly','strokePoly','drawArc','strokeArc','clear']) w[f]=(o)=>{ for (const [k,v] of Object.entries(o)) if (typeof v==='number' && !isFinite(v)) throw new Error(f+' '+k+' não finito'); ops.push([f,o]) }
   widgets.push(w); globalThis.__canvasOps.push(ops); return w }
+// Tela simulada: DEV_W=390 DEV_H=450 → quadrado (Bip 6, GTS 4). px() escala pela designWidth 480, como no relógio.
+const SW = Number(process.env.DEV_W || 480)
+const SH = Number(process.env.DEV_H || 480)
+const PAG = SW === SH ? 480 : SH // altura de uma página do swiper (o redondo usa px(480) = 480)
 const store = {}
 globalThis.__files = {}
 globalThis.__zos = {
@@ -25,7 +29,8 @@ globalThis.__zos = {
     onDigitalCrown:(o)=>{ globalThis.__crown=o.callback }, offDigitalCrown:()=>{ globalThis.__crown=null },
     onGesture:(o)=>{ globalThis.__gest=o.callback }, offGesture:()=>{ globalThis.__gest=null } },
   storage: { localStorage: { getItem(k,d){ if(typeof d!=='string') throw new Error('default precisa ser string'); return store[k]??d }, setItem(k,v){ if(typeof v!=='string') throw new Error('valor precisa ser string'); store[k]=v } } },
-  utils: { px:(v)=>v },
+  utils: { px:(v)=>v*SW/480 },
+  device: { getDeviceInfo:()=>({ width: SW, height: SH }) },
   settings: { getLanguage:()=>Number(process.env.LANG_ZEPP ?? 20) },
   display: { setPageBrightTime:()=>0, resetPageBrightTime:()=>0 },
   fs: { writeFileSync:(o)=>{ globalThis.__files[o.path]=o.data } },
@@ -47,8 +52,8 @@ const tick0 = () => new Promise(r=>setTimeout(r,45))
 // router.replace → recria a página do zero (como o relógio faz)
 const tick = async () => { await tick0(); if (globalThis.__replace) { const u=globalThis.__replace.url; globalThis.__replace=null; globalThis.__recargas=(globalThis.__recargas||0)+1; page.onDestroy(); widgets.forEach(w=>w.vivo=false); page.state = { ui: {}, sistema: 66, cache: null, todos: null, listaAberta: false }; page.onInit(); page.build(); await tick0(); console.log('   ↻ replace', u, '→ telas', page.state.nTelas) } }
 const vis = (w) => w.vivo && w.opts.visible !== false
-const tela = (n) => widgets.filter(w=>w.type==='TEXT' && vis(w) && w.opts.y>=n*480 && w.opts.y<(n+1)*480 && w.opts.text).map(w=>w.opts.text).join(' | ')
-const lista = () => widgets.filter(w=>w.type==='TEXT' && vis(w) && w.opts.y<480 && w.opts.text)
+const tela = (n) => widgets.filter(w=>w.type==='TEXT' && vis(w) && w.opts.y>=n*PAG && w.opts.y<(n+1)*PAG && w.opts.text).map(w=>w.opts.text).join(' | ')
+const lista = () => widgets.filter(w=>w.type==='TEXT' && vis(w) && w.opts.y<PAG && w.opts.text)
 
 page.onInit(); page.build(); await tick()
 console.log('\n[abre] telas', globalThis.__scroll.options.count, '| pediu', pedidos.join(','))
@@ -74,7 +79,7 @@ console.log('\n[escolheu Integrado RMSP]')
 for (let n=0;n<page.state.nTelas;n++) console.log(` tela ${n+1}:`, tela(n))
 console.log('\nponte guara.json (deve ser Guarapiranga):', globalThis.__files['guara.json'])
 console.log('erros na tela:', widgets.filter(w=>w.vivo && String(w.opts.text).startsWith('ERRO')).map(w=>w.opts.text))
-console.log('fora da tela:', widgets.filter(w=> (w.opts.y % 480) + (w.opts.h||0) > 480).length)
+console.log('fora da tela:', widgets.filter(w=> w.vivo && w.opts.y >= 0 && ((w.opts.y % PAG) + (w.opts.h||0) > PAG + 0.5 || (w.opts.x||0) + (w.opts.w||0) > SW + 0.5)).length)
 
 // ─── Coroa ──────────────────────────────────────────────────────────
 const I = globalThis.__zos.interaction
@@ -267,5 +272,5 @@ if (process.env.DUMPPAGINA) {
   const pag = vivos()
   page.abrirLista() // lista de sistemas (camada sobre a tela 1)
   const comLista = vivos()
-  fs.writeFileSync(process.env.DUMPPAGINA, JSON.stringify({ n: page.state.nTelas, widgets: pag, lista: comLista.filter((w) => w.y < 480) }))
+  fs.writeFileSync(process.env.DUMPPAGINA, JSON.stringify({ n: page.state.nTelas, sw: SW, sh: SH, pag: PAG, widgets: pag, lista: comLista.filter((w) => w.y < PAG) }))
 }

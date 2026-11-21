@@ -5,8 +5,8 @@
     "appName": "Mananciais SP",
     "appType": "app",
     "version": {
-      "code": 24,
-      "name": "1.5.1"
+      "code": 25,
+      "name": "1.6.0"
     },
     "icon": "icon.png",
     "vender": "ArtBombs",
@@ -41,6 +41,10 @@
         {
           "st": "r",
           "sr": "w480"
+        },
+        {
+          "st": "s",
+          "sr": "w390"
         }
       ],
       "designWidth": 480
