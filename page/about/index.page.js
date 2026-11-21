@@ -9,8 +9,8 @@ import { setPageBrightTime } from '@zos/display'
 import { px } from '@zos/utils'
 import { EN, t, dataCurta } from '../i18n'
 
-const C = { bg: 0x000000, branco: 0xffffff, agua: 0x2ec4d6 }
-const VERSAO_RESERVA = '1.5.0' // se getPackageInfo não existir no firmware
+const C = { bg: 0x000000, branco: 0xffffff, ciano: 0x11b8e2 } // ciano = mesma cor da arte
+const VERSAO_RESERVA = '1.5.1' // se getPackageInfo não existir no firmware
 // Apoio (LivePix): https://livepix.gg/artbombs — para trocar o link, regerar a imagem:
 //   python3 tools/qr_png.py <link> assets/common.w480-r/image/qr_apoio.png
 // Avisa a página principal que o Sobre está por cima (para a coroa não abrir a lista escondida).
@@ -65,10 +65,10 @@ Page({
 
   build() {
     createWidget(widget.IMG, { x: 0, y: 0, w: px(480), h: px(480), src: EN ? 'image/sobre_en.png' : 'image/sobre.png' }) // inglês: tools/sobre_en.py
-    // Posições medidas na arte (08/11): data na faixa azul-petróleo; versão na pílula do apoio.
+    // Posições medidas na arte (21/11): versão no topo, acima do logo; data na faixa azul-petróleo.
     texto({ x: 40, y: 281, w: 400, h: 38, text: t('dadosDe') + dataCurta(this.state.params.data) + t('atualiza9h'), size: 20, color: C.branco })
-    texto({ x: 158, y: 372, w: 120, h: 32, text: 'v' + versao(), size: 18, color: C.agua })
-    // "Apoie o projeto" + pílula da versão + mini QR + "Made by ArtBomb's"
+    texto({ x: 160, y: 21, w: 160, h: 34, text: 'v' + versao(), size: 20, color: C.ciano })
+    // "Apoie o projeto" + pílula LivePix + mini QR + "Made by ArtBomb's"
     area(132, 340, 216, 116, () => this.abrirQR())
   },
 
